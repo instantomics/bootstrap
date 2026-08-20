@@ -1,4 +1,4 @@
-# Iomix Contributor Bootstrap
+# Instantomics Bootstrap
 
 This public phase-zero repository has one deliberately small path from a clean
 shell to a source-author workspace. It intentionally follows `main`: the
