@@ -5,7 +5,7 @@ shell to a source-author workspace. It intentionally follows `main`: the
 allocation script fetches the current `bootstrap.sh`, and that script installs
 the current `iom` `main` over authenticated SSH. No release or commit is pinned.
 
-Run this exact one-liner outside SLURM:
+Run this exact one-liner outside in the login node on SLURM:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/allocate.sh | bash -s --
