@@ -1,0 +1,15 @@
+name: Shell tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: bash -n allocate.sh bootstrap.sh tests/test.sh
+      - name: Run shell tests
+        run: bash tests/test.sh
