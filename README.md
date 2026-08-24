@@ -1,33 +1,44 @@
 # Instantomics Bootstrap
 
-This public phase-zero repository has one deliberately small path from a clean
-shell to a source-author workspace. It intentionally follows `main`: the
-allocation script fetches the current `bootstrap.sh`, and that script installs
-the current `iom` `main` over authenticated SSH. No release or commit is pinned.
+## GitHub Setup
 
-Run this exact one-liner outside in the login node on SLURM:
+Install the [GitHub CLI](https://cli.github.com/) if `gh --version` is not
+available, then authenticate GitHub using SSH:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/allocate.sh | bash -s --
+gh auth login --hostname github.com --git-protocol ssh --web
+gh auth status
+ssh -T git@github.com
 ```
 
-The two steps are direct:
+You must be an active member of the `instantomics` GitHub organization and have
+access to its private repositories. Ask a project administrator if authentication
+succeeds but repository access is denied.
 
-1. `allocate.sh` starts one interactive `srun --pty` job with a 14-day default,
-   then fetches and runs current-main `bootstrap.sh` inside that job.
-2. `bootstrap.sh` validates the SLURM allocation and `SCRATCHDIR`, prompts on
-   `/dev/tty` for a persistent workspace (defaulting to the current directory),
-   installs `iom`, runs `iom workspace bootstrap --role source-author
-   --workspace PATH`, and runs `iom workspace doctor` from that workspace.
+## Create The Workspace
 
-The workspace must be outside `SCRATCHDIR`; `iom` owns and rejects that
-placement check. On success the script enters an interactive login shell in the
-workspace and keeps the allocation open. It does not submit a smoke job.
+Run the bootstrap from a SLURM login node. The recommended persistent workspace
+location is `/data/groups/vib.ai/wouter.saelens/PERSONAL/<user>/instantomics`,
+where `<user>` is your cluster username. For the usual case where `$USER` matches
+that directory name, run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/allocate.sh | \
+    bash -s -- --workspace "/data/groups/vib.ai/wouter.saelens/PERSONAL/${USER}/instantomics"
+```
+
+The command starts an interactive SLURM allocation with a 14-day default,
+assembles the source-author workspace, and checks its readiness. On success it
+opens an interactive shell in the workspace and keeps the allocation open.
+
+The workspace must be outside `SCRATCHDIR`. The bootstrap refuses an invalid
+location rather than moving or replacing existing files.
 
 For a non-interactive bootstrap, pass the workspace explicitly:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/bootstrap.sh | bash -s -- --workspace /persistent/path
+curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/bootstrap.sh | \
+    bash -s -- --workspace /persistent/path
 ```
 
 That direct form still requires an existing SLURM allocation and an absolute,
