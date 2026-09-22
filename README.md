@@ -15,6 +15,13 @@ You must be an active member of the `instantomics` GitHub organization and have
 access to its private repositories. Ask a project administrator if authentication
 succeeds but repository access is denied.
 
+Configure the Git identity used for contributions if it is not already present:
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.org"
+```
+
 ## Create The Workspace
 
 Run the bootstrap from a SLURM login node. The recommended persistent workspace
@@ -30,6 +37,8 @@ curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/allocat
 The command starts an interactive SLURM allocation with a 14-day default,
 assembles the source-author workspace, and checks its readiness. On success it
 opens an interactive shell in the workspace and keeps the allocation open.
+Rerun the same command to enter the existing workspace from a later allocation;
+bootstrap reuses an exact healthy checkout rather than replacing it.
 
 The workspace must be outside `SCRATCHDIR`. The bootstrap refuses an invalid
 location rather than moving or replacing existing files.

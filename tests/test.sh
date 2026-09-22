@@ -88,7 +88,9 @@ set -euo pipefail
     printf 'cwd=%s args:' "$PWD"
     printf ' %s' "$@"
     printf '\n'
-    printf 'IOM_CACHE_ROOT=%s\n' "$IOM_CACHE_ROOT"
+    printf 'IOM_CACHE_ROOT=%s\n' "${IOM_CACHE_ROOT:-}"
+    printf 'IOM_WORKSPACE_ROOT=%s\n' "${IOM_WORKSPACE_ROOT:-}"
+    printf 'IOMIX_WORKSPACE_ROOT=%s\n' "${IOMIX_WORKSPACE_ROOT:-}"
 } >>"$FAKE_IOM_LOG"
 
 if [[ ${1:-} == workspace && ${2:-} == bootstrap ]]; then
@@ -106,6 +108,10 @@ if [[ ${1:-} == workspace && ${2:-} == bootstrap ]]; then
         exit 1
     fi
     mkdir -p "$workspace"
+fi
+if [[ ${1:-} == workspace && ${2:-} == doctor ]]; then
+    [[ ${IOM_WORKSPACE_ROOT:-} == "$PWD" ]]
+    [[ -z ${IOMIX_WORKSPACE_ROOT:-} ]]
 fi
 EOF
 
@@ -160,6 +166,8 @@ assert_file_contains "$FAKE_ARGUMENT_LOG" 'argc=3 arg=<first> arg=<two words> ar
 workspace="$TEST_ROOT/persistent workspace"
 rm -f "$FAKE_SRUN_LOG" "$FAKE_IOM_LOG"
 env -u SLURM_JOB_ID \
+    IOM_WORKSPACE_ROOT="$TEST_ROOT/wrong-workspace" \
+    IOMIX_WORKSPACE_ROOT="$TEST_ROOT/obsolete-workspace" \
     BOOTSTRAP_URL="https://example.invalid/bootstrap.sh" \
     "$ROOT/allocate.sh" --workspace "$workspace"
 assert_file_contains "$FAKE_SRUN_LOG" '--time=14-00:00:00'
@@ -168,7 +176,8 @@ assert_file_lacks "$FAKE_SRUN_LOG" '--partition='
 assert_file_contains "$FAKE_IOM_LOG" "args: workspace bootstrap --role source-author --workspace $workspace"
 assert_file_contains "$FAKE_IOM_LOG" "args: workspace doctor"
 assert_file_contains "$FAKE_IOM_LOG" "cwd=$workspace args: workspace doctor"
-assert_file_contains "$FAKE_IOM_LOG" "IOM_CACHE_ROOT=$HOME_ROOT/.local/state/iom"
+assert_file_contains "$FAKE_IOM_LOG" "IOM_CACHE_ROOT="
+assert_not_file "$HOME_ROOT/.local/state/iom"
 
 rm -f "$FAKE_SRUN_LOG"
 export BOOTSTRAP_TIME=02:00:00

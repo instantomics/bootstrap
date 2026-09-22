@@ -56,13 +56,15 @@ if [[ -z $tmpdir || $tmpdir != /* || ! -d $tmpdir || ! -w $tmpdir || ! -x $tmpdi
 fi
 
 : "${HOME:?bootstrap: HOME is required}"
-export IOM_CACHE_ROOT=${IOM_CACHE_ROOT:-"$HOME/.local/state/iom"}
-[[ $IOM_CACHE_ROOT == /* ]] || die "IOM_CACHE_ROOT must be absolute"
-mkdir -p "$IOM_CACHE_ROOT"
-scratch_real=$(cd -- "$scratchdir" && pwd -P)
-cache_real=$(cd -- "$IOM_CACHE_ROOT" && pwd -P)
-if [[ $cache_real == "$scratch_real" || $cache_real == "$scratch_real"/* ]]; then
-    die "IOM_CACHE_ROOT must remain outside SCRATCHDIR"
+if [[ -n ${IOM_CACHE_ROOT:-} ]]; then
+    export IOM_CACHE_ROOT
+    [[ $IOM_CACHE_ROOT == /* ]] || die "IOM_CACHE_ROOT must be absolute"
+    mkdir -p "$IOM_CACHE_ROOT"
+    scratch_real=$(cd -- "$scratchdir" && pwd -P)
+    cache_real=$(cd -- "$IOM_CACHE_ROOT" && pwd -P)
+    if [[ $cache_real == "$scratch_real" || $cache_real == "$scratch_real"/* ]]; then
+        die "IOM_CACHE_ROOT must remain outside SCRATCHDIR"
+    fi
 fi
 
 if ((workspace_given == 0)); then
@@ -108,6 +110,9 @@ bootstrap_timeout="${BOOTSTRAP_WORKSPACE_TIMEOUT:-1800}"
 doctor_timeout="${BOOTSTRAP_DOCTOR_TIMEOUT:-300}"
 timeout --foreground "$bootstrap_timeout" \
     iom workspace bootstrap --role source-author --workspace "$workspace"
+workspace=$(cd -- "$workspace" && pwd -P)
+export IOM_WORKSPACE_ROOT="$workspace"
+unset IOMIX_WORKSPACE_ROOT
 if ! (cd -- "$workspace" && timeout --foreground "$doctor_timeout" iom workspace doctor); then
     die "workspace doctor failed"
 fi
