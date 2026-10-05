@@ -56,17 +56,6 @@ if [[ -z $tmpdir || $tmpdir != /* || ! -d $tmpdir || ! -w $tmpdir || ! -x $tmpdi
 fi
 
 : "${HOME:?bootstrap: HOME is required}"
-if [[ -n ${IOM_CACHE_ROOT:-} ]]; then
-    export IOM_CACHE_ROOT
-    [[ $IOM_CACHE_ROOT == /* ]] || die "IOM_CACHE_ROOT must be absolute"
-    mkdir -p "$IOM_CACHE_ROOT"
-    scratch_real=$(cd -- "$scratchdir" && pwd -P)
-    cache_real=$(cd -- "$IOM_CACHE_ROOT" && pwd -P)
-    if [[ $cache_real == "$scratch_real" || $cache_real == "$scratch_real"/* ]]; then
-        die "IOM_CACHE_ROOT must remain outside SCRATCHDIR"
-    fi
-fi
-
 if ((workspace_given == 0)); then
     if exec 3<>/dev/tty 2>/dev/null; then
         current_directory=$(pwd -P)
@@ -84,6 +73,21 @@ if ((workspace_given == 0)); then
 fi
 
 [[ -n $workspace ]] || die "--workspace requires PATH"
+
+# Iom's own fallback would resolve to the scratch XDG_CACHE_HOME set below, so
+# default its persistent state next to the persistent workspace.
+if [[ -z ${IOM_CACHE_ROOT:-} ]]; then
+    [[ $workspace == /* ]] || workspace="$PWD/$workspace"
+    IOM_CACHE_ROOT="$(dirname -- "$workspace")/.cache/iom"
+fi
+export IOM_CACHE_ROOT
+[[ $IOM_CACHE_ROOT == /* ]] || die "IOM_CACHE_ROOT must be absolute"
+mkdir -p "$IOM_CACHE_ROOT"
+scratch_real=$(cd -- "$scratchdir" && pwd -P)
+cache_real=$(cd -- "$IOM_CACHE_ROOT" && pwd -P)
+if [[ $cache_real == "$scratch_real" || $cache_real == "$scratch_real"/* ]]; then
+    die "IOM_CACHE_ROOT must remain outside SCRATCHDIR"
+fi
 
 for command in gh git ssh timeout uv; do
     require_command "$command"

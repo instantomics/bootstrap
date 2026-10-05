@@ -176,7 +176,7 @@ assert_file_lacks "$FAKE_SRUN_LOG" '--partition='
 assert_file_contains "$FAKE_IOM_LOG" "args: workspace bootstrap --role source-author --workspace $workspace"
 assert_file_contains "$FAKE_IOM_LOG" "args: workspace doctor"
 assert_file_contains "$FAKE_IOM_LOG" "cwd=$workspace args: workspace doctor"
-assert_file_contains "$FAKE_IOM_LOG" "IOM_CACHE_ROOT="
+assert_file_contains "$FAKE_IOM_LOG" "IOM_CACHE_ROOT=$TEST_ROOT/.cache/iom"
 assert_not_file "$HOME_ROOT/.local/state/iom"
 
 rm -f "$FAKE_SRUN_LOG"
@@ -220,7 +220,7 @@ assert_file_contains "$TEST_ROOT/no-tty.out" '--workspace PATH is required when 
 assert_not_file "$FAKE_IOM_LOG"
 
 : >"$FAKE_IOM_LOG"
-if FAKE_IOM_REJECT_SCRATCH=1 "$ROOT/bootstrap.sh" --workspace "$SCRATCH/rejected" >"$TEST_ROOT/rejected.out" 2>&1; then
+if FAKE_IOM_REJECT_SCRATCH=1 IOM_CACHE_ROOT="$explicit_state" "$ROOT/bootstrap.sh" --workspace "$SCRATCH/rejected" >"$TEST_ROOT/rejected.out" 2>&1; then
     printf 'bootstrap unexpectedly accepted a SCRATCHDIR workspace\n' >&2
     exit 1
 fi
