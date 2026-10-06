@@ -176,6 +176,8 @@ assert_file_lacks "$FAKE_SRUN_LOG" '--partition='
 assert_file_contains "$FAKE_IOM_LOG" "args: workspace bootstrap --role source-author --workspace $workspace"
 assert_file_contains "$FAKE_IOM_LOG" "args: workspace doctor"
 assert_file_contains "$FAKE_IOM_LOG" "cwd=$workspace args: workspace doctor"
+assert_file_contains "$FAKE_IOM_LOG" "cwd=$workspace args: launcher install"
+assert_file_lacks "$FAKE_IOM_LOG" "launcher install --upgrade"
 assert_file_contains "$FAKE_IOM_LOG" "IOM_CACHE_ROOT="
 assert_not_file "$HOME_ROOT/.local/state/iom"
 
@@ -186,6 +188,10 @@ export BOOTSTRAP_PARTITION=test_partition
 "$ROOT/allocate.sh" --workspace "$TEST_ROOT/reused"
 assert_not_file "$FAKE_SRUN_LOG"
 unset BOOTSTRAP_TIME BOOTSTRAP_ACCOUNT BOOTSTRAP_PARTITION
+
+: >"$FAKE_IOM_LOG"
+"$ROOT/bootstrap.sh" --workspace "$workspace" --upgrade-iom
+assert_file_contains "$FAKE_IOM_LOG" "args: launcher install --upgrade"
 
 : >"$FAKE_UV_LOG"
 run_bootstrap "$TEST_ROOT/allocation-local"

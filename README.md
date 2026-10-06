@@ -37,8 +37,15 @@ curl -fsSL https://raw.githubusercontent.com/instantomics/bootstrap/main/allocat
 The command starts an interactive SLURM allocation with a 14-day default,
 assembles the source-author workspace, and checks its readiness. On success it
 opens an interactive shell in the workspace and keeps the allocation open.
-Rerun the same command to enter the existing workspace from a later allocation;
-bootstrap reuses an exact healthy checkout rather than replacing it.
+Setup is persistent: later allocations can use `iom` directly from the existing
+workspace. Only the small launcher and installation inputs persist; executable
+environments are prepared in each allocation's scratch space as needed. Open a
+new shell after setup if another already-open terminal does not yet find `iom`.
+
+Rerunning this command with the same workspace path is safe. Bootstrap reuses
+healthy checkouts and retains its selected launcher installation. It never resets
+or pulls existing repositories; dirty or divergent checkouts cause a diagnostic
+failure, leaving contributor work intact. Updates are a separate explicit action.
 
 The workspace must be outside `SCRATCHDIR`. The bootstrap refuses an invalid
 location rather than moving or replacing existing files.
@@ -80,8 +87,9 @@ The host needs Bash, `curl`, and Slurm `srun`. The allocation needs `uv`, Git,
 GitHub CLI, SSH, and the GNU `timeout` command. `iom` creates or reuses the
 workspace and performs its own contributor checks.
 
-All uv tool, binary, Python, cache, and XDG cache paths used by the bootstrap
-are placed below `SCRATCHDIR` and are disposable with the allocation.
+Runtime environments and caches are disposable with the allocation. A persistent
+command removes the need to repeat onboarding merely because an allocation ended.
+Launcher lifecycle is owned by [Iom](https://github.com/instantomics/iom).
 
 ## Tests
 

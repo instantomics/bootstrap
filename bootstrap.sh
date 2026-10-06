@@ -15,13 +15,20 @@ require_command() {
 }
 
 usage() {
-    printf 'Usage: bootstrap.sh [--workspace PATH]\n'
+    printf 'Usage: bootstrap.sh [--workspace PATH] [--upgrade-iom]\n'
+    printf 'Existing workspace checkouts are never reset or updated.\n'
+    printf '  --upgrade-iom  Explicitly replace retained tooling with current main.\n'
 }
 
 workspace=
 workspace_given=0
+launcher_args=()
 while (($# > 0)); do
     case "$1" in
+        --upgrade-iom)
+            launcher_args=(--upgrade)
+            shift
+            ;;
         --workspace)
             (($# >= 2)) || die "--workspace requires PATH"
             workspace=$2
@@ -100,7 +107,7 @@ mkdir -p "$UV_TOOL_DIR" "$UV_TOOL_BIN_DIR" "$UV_CACHE_DIR" \
 export PATH="$UV_TOOL_BIN_DIR:$PATH"
 
 install_timeout="${BOOTSTRAP_IOM_INSTALL_TIMEOUT:-300}"
-if ! timeout --foreground "$install_timeout" uv tool install --force --from "$IOM_SOURCE" iom; then
+if ! timeout --foreground "$install_timeout" uv tool install --force --managed-python --python 3.13 --from "$IOM_SOURCE" iom; then
     die "could not install iom from main over SSH"
 fi
 hash -r
@@ -118,6 +125,9 @@ if ! (cd -- "$workspace" && timeout --foreground "$doctor_timeout" iom workspace
 fi
 
 cd -- "$workspace"
+timeout --foreground "${BOOTSTRAP_LAUNCHER_TIMEOUT:-900}" iom launcher install "${launcher_args[@]}"
+export PATH="$HOME/.local/bin:$PATH"
+hash -r
 printf 'Workspace ready: %s\n' "$PWD"
 if [[ ${BOOTSTRAP_NO_SHELL:-0} != 1 && -r /dev/tty && -w /dev/tty ]]; then
     exec "${SHELL:-/bin/bash}" -il </dev/tty >/dev/tty 2>&1
