@@ -15,6 +15,7 @@ export PATH="$FAKE_BIN:$PATH"
 export SCRATCHDIR="$SCRATCH"
 export TMPDIR="$ALLOCATION_TMP"
 export HOME="$HOME_ROOT"
+export IOM_PERSONAL_ROOT="$TEST_ROOT/personal"
 export SLURM_JOB_ID=fake-job
 export FAKE_CURL_PAYLOAD="$ROOT/bootstrap.sh"
 export FAKE_CURL_LOG="$TEST_ROOT/curl.log"
@@ -89,6 +90,7 @@ set -euo pipefail
     printf ' %s' "$@"
     printf '\n'
     printf 'IOM_CACHE_ROOT=%s\n' "${IOM_CACHE_ROOT:-}"
+    printf 'IOM_PERSONAL_ROOT=%s\n' "${IOM_PERSONAL_ROOT:-}"
     printf 'IOM_WORKSPACE_ROOT=%s\n' "${IOM_WORKSPACE_ROOT:-}"
     printf 'IOMIX_WORKSPACE_ROOT=%s\n' "${IOMIX_WORKSPACE_ROOT:-}"
 } >>"$FAKE_IOM_LOG"
@@ -216,6 +218,17 @@ if IOM_CACHE_ROOT="$SCRATCH/state" "$ROOT/bootstrap.sh" --workspace "$TEST_ROOT/
     exit 1
 fi
 assert_file_contains "$TEST_ROOT/bad-cache.out" 'IOM_CACHE_ROOT must remain outside SCRATCHDIR'
+
+: >"$FAKE_IOM_LOG"
+run_bootstrap "$TEST_ROOT/personal-root"
+assert_file_contains "$FAKE_IOM_LOG" "IOM_PERSONAL_ROOT=$TEST_ROOT/personal"
+
+if env -u IOM_PERSONAL_ROOT "$ROOT/bootstrap.sh" --workspace "$TEST_ROOT/no-personal" \
+    >"$TEST_ROOT/no-personal.out" 2>&1; then
+    printf 'bootstrap unexpectedly accepted a missing personal root\n' >&2
+    exit 1
+fi
+assert_file_contains "$TEST_ROOT/no-personal.out" 'IOM_PERSONAL_ROOT is required'
 
 rm -f "$FAKE_IOM_LOG"
 if "$ROOT/bootstrap.sh" </dev/null >"$TEST_ROOT/no-tty.out" 2>&1; then

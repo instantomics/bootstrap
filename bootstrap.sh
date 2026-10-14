@@ -72,6 +72,10 @@ if [[ -n ${IOM_CACHE_ROOT:-} ]]; then
     if [[ $cache_real == "$scratch_real" || $cache_real == "$scratch_real"/* ]]; then
         die "IOM_CACHE_ROOT must remain outside SCRATCHDIR"
     fi
+elif [[ -n ${IOM_PERSONAL_ROOT:-} ]]; then
+    export IOM_PERSONAL_ROOT
+else
+    die "IOM_PERSONAL_ROOT is required: export a persistent personal directory outside HOME in your shell profile"
 fi
 
 if ((workspace_given == 0)); then

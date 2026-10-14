@@ -24,6 +24,17 @@ git config --global user.email "you@example.org"
 
 ## Create The Workspace
 
+Choose a persistent personal directory outside your home directory and
+`SCRATCHDIR`, and export it from your shell profile so every shell and Slurm job
+sees it:
+
+```bash
+export IOM_PERSONAL_ROOT=/data/groups/vib.ai/wouter.saelens/PERSONAL/<user>
+```
+
+Iom keeps its durable state below this directory and refuses to run without it.
+The home directory has a small quota and must not hold caches.
+
 Run the bootstrap from a SLURM login node. The recommended persistent workspace
 location is `/data/groups/vib.ai/wouter.saelens/PERSONAL/<user>/instantomics`,
 where `<user>` is your cluster username. For the usual case where `$USER` matches
