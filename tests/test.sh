@@ -223,7 +223,7 @@ assert_file_contains "$TEST_ROOT/bad-cache.out" 'IOM_CACHE_ROOT must remain outs
 run_bootstrap "$TEST_ROOT/personal-root"
 assert_file_contains "$FAKE_IOM_LOG" "IOM_PERSONAL_ROOT=$TEST_ROOT/personal"
 
-if env -u IOM_PERSONAL_ROOT "$ROOT/bootstrap.sh" --workspace "$TEST_ROOT/no-personal" \
+if env -u IOM_PERSONAL_ROOT USER=bootstrap-test-without-personal "$ROOT/bootstrap.sh" --workspace "$TEST_ROOT/no-personal" \
     >"$TEST_ROOT/no-personal.out" 2>&1; then
     printf 'bootstrap unexpectedly accepted a missing personal root\n' >&2
     exit 1
