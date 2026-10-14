@@ -74,7 +74,7 @@ if [[ -n ${IOM_CACHE_ROOT:-} ]]; then
     fi
 elif [[ -n ${IOM_PERSONAL_ROOT:-} ]]; then
     export IOM_PERSONAL_ROOT
-elif [[ ! -d /data/groups/vib.ai/${USER:-}/PERSONAL ]]; then
+elif [[ -z ${USER:-} || ! -d /data/groups/vib.ai/wouter.saelens/PERSONAL/$USER ]]; then
     die "IOM_PERSONAL_ROOT is required: export a persistent personal directory outside HOME in your shell profile"
 fi
 

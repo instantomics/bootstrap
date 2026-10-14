@@ -24,12 +24,12 @@ git config --global user.email "you@example.org"
 
 ## Create The Workspace
 
-If `/data/groups/vib.ai/<user>/PERSONAL` does not exist for you, choose a
+If `/data/groups/vib.ai/wouter.saelens/PERSONAL/<user>` does not exist for you, choose a
 persistent personal directory outside your home directory and `SCRATCHDIR`, and
 export it from your shell profile so every shell and Slurm job sees it:
 
 ```bash
-export IOM_PERSONAL_ROOT=/data/groups/vib.ai/wouter.saelens/PERSONAL/<user>
+export IOM_PERSONAL_ROOT=/persistent/storage/<user>
 ```
 
 Iom keeps its durable state below this directory and refuses to run without one.
